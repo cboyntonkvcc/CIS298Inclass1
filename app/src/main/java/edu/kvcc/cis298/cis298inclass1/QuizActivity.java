@@ -1,5 +1,6 @@
 package edu.kvcc.cis298.cis298inclass1;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,7 @@ public class QuizActivity extends AppCompatActivity {
     private Button mFalseButton;
     private Button mNextButton;
     private TextView mQuestionTextView;
+    private Button mCheatButton;
 
     //array of questions. we send over the resource id from R.java
     //as the first parameter of the constructor
@@ -72,6 +74,30 @@ public class QuizActivity extends AppCompatActivity {
 
         //get a reference to the textview that displays the question
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
+
+
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener()
+        { @Override
+            public void onClick(View v) {
+
+            //create a new intent to get the activity started
+            //intents are objects that hold all of the data needed
+            //to start up a new activity. we then call startActivity
+            //with the intent as a parameter. The intent is used by the OS
+            //to determine what activity to start up
+            //Activites are started vy the os. Not by the app
+            boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerIsTrue();
+
+            Intent i = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+            startActivity(i);
+
+
+        }
+
+        });
+
+
 
         //check the saveInstanceState bundle and see if there is
         //an index that we need to fetch out so we display the correct
