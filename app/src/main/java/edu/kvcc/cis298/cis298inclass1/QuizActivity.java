@@ -1,5 +1,6 @@
 package edu.kvcc.cis298.cis298inclass1;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,11 +19,20 @@ public class QuizActivity extends AppCompatActivity {
     //called the bundle to save information between screen rotations
     private static final String KEY_INDEX = "index";
 
+    //declare a request code integer that can be sent with the
+    //startActivityForResult method. This way when we return
+    //to this activity we can check this request code to see if it is the
+    //one that matches the one we sent when we started
+    //the cheat activity
+    private static final int REQUEST_CODE_CHEAT = 0;
+
     private Button mTrueButton;
     private Button mFalseButton;
     private Button mNextButton;
     private TextView mQuestionTextView;
     private Button mCheatButton;
+
+
 
     //array of questions. we send over the resource id from R.java
     //as the first parameter of the constructor
@@ -42,6 +52,11 @@ public class QuizActivity extends AppCompatActivity {
     private int mCurrentIndex = 0;
 
 
+    //class level variable to know whether the person used
+    //the cheat activity
+    private boolean mIsCheater;
+
+
 
 
     private void checkAnswer(boolean userPressedTrue) {
@@ -49,17 +64,26 @@ public class QuizActivity extends AppCompatActivity {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerIsTrue();
         //declare a int to hold the string resource id of the answer
         int messageResId = 0;
-        //if the questions answer and userpressingTrue are equal
-        //they got it right correct answers will be when both
-        //variables are the same. If they are different it is wrong
-        //set the messageResId once we determine what to set it to
-        if (userPressedTrue == answerIsTrue) {
-            messageResId = R.string.correct_toast;
-        } else {
-            messageResId = R.string.incorrect_toast;
+
+        //first check to see if the user cheated
+        if(mIsCheater){
+            //set the answer to the do not cheat string
+            messageResId = R.string.judgment_toast;
+
+        }else {
+
+
+            //if the questions answer and userpressingTrue are equal
+            //they got it right correct answers will be when both
+            //variables are the same. If they are different it is wrong
+            //set the messageResId once we determine what to set it to
+            if (userPressedTrue == answerIsTrue) {
+                messageResId = R.string.correct_toast;
+            } else {
+                messageResId = R.string.incorrect_toast;
+            }
+
         }
-
-
         //make the toast just like before only now, we only need one of them
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
 
@@ -90,7 +114,7 @@ public class QuizActivity extends AppCompatActivity {
             boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerIsTrue();
 
             Intent i = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
-            startActivity(i);
+            startActivityForResult(i, REQUEST_CODE_CHEAT);
 
 
         }
@@ -144,6 +168,11 @@ public class QuizActivity extends AppCompatActivity {
                 //this will allow us to cycle the index back to zero if
                 //it is about to become 5
                 mCurrentIndex = (mCurrentIndex +1) % mQuestionBank.length;
+
+                //reset cheater bool
+                mIsCheater = false;
+
+                //update the question
                 updateQuestion();
             }
         });
@@ -163,6 +192,36 @@ public class QuizActivity extends AppCompatActivity {
     }
 
 
+    //handle returning from another actitivity
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //if something went wrong in the other activity  and the result
+        //code is not ok we can just return  no need to do any work
+        if(resultCode != Activity.RESULT_OK){
+            return;
+        }
+        //check the request code and see which one it is
+        //since we only have 1 other activity safe to say its gonna
+        //be that one. but in the event we had more activities
+        //we would want to know which one we are returning from
+        if (requestCode == REQUEST_CODE_CHEAT){
+            //Check to see if the return data (Intent) is null for some reason
+            if (data == null){
+                return;
+            }
+            //everything checks out we can safely pull out the data we need
+            //we will use the static method on the cheat class to decode the
+            //returned data and tell us if the person cheated or not
+            mIsCheater = CheatActivity.wasAnserShown(data);
+        }
+    }
+
+
+
+    //handles screen rotaion
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
@@ -170,6 +229,16 @@ public class QuizActivity extends AppCompatActivity {
         savedInstanceState.putInt(KEY_INDEX,mCurrentIndex);
 
     }
+
+
+
+
+
+
+
+
+
+    //Log overrides that just log stuff out to the logCat
 
     @Override
     protected void onStart() {

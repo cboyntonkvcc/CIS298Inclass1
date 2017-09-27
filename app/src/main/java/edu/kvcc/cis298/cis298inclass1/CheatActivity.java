@@ -10,8 +10,16 @@ import android.widget.TextView;
 
 public class CheatActivity extends AppCompatActivity {
 
+
+    //This key is used to store the data on the intent
+    //that is created to get this activity started
     private static final String EXTRA_ANSWER_IS_TRUE =
             "edu.kvcc.cis298.cis298inclass1.answer_is_true";
+
+    //This key is used to store the return data on the return intent
+    //that is created to send data back to the quiz activity.
+    private static final String EXTRA_ANSWER_SHOWN =
+            "edu.kvcc.cis298.cis298inclass1.answer_shown";
 
     //Stores the answer to the quetion from the quizActivity
     private boolean mAnswerIsTrue;
@@ -23,6 +31,15 @@ public class CheatActivity extends AppCompatActivity {
         Intent i = new Intent(packageContext, CheatActivity.class);
         i.putExtra(EXTRA_ANSWER_IS_TRUE, answerIsTrue);
         return i;
+    }
+
+
+    //this method will be called by QuizActivity to check and see if a user
+    //cheated or not. QuizActivity will sen the intent that contains the result
+    //data into this method, and this methos will 'decode' the intent and return
+    //a bool to let us know whether the person cheated or not
+    public static boolean wasAnserShown(Intent result){
+        return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
     }
 
 
@@ -52,8 +69,25 @@ public class CheatActivity extends AppCompatActivity {
                 else{
                     mAnswerTextView.setText(R.string.false_button);
                 }
+
+                setAnswerShownResult(true);
             }
         });
 
+    }
+
+    private void setAnswerShownResult(boolean isAnswerShown){
+        //make a new intent that will be used to hold the return data
+        //it will not ve used to start a new activity
+        //intent now has a double duty
+        Intent data = new Intent();
+
+        //put an extra just like when we are creating an intent to start an activity
+        data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
+
+        //call activity set result methos to attach the intent as the return data
+        // the first parameter is a CONST that says that everything finished okay here.
+        //there are other result consts for when other things happen
+        setResult(RESULT_OK,data);
     }
 }
