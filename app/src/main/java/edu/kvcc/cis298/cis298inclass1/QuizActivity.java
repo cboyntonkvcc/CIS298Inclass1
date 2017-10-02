@@ -109,7 +109,15 @@ public class QuizActivity extends AppCompatActivity {
                 //id of the wiget control.
                 int selectedAnswerId = mQuestionGroup.getCheckedRadioButtonId();
                 //call checkAnser sending in the selectedAnswerId
-               checkAnswer(selectedAnswerId);
+                //see if the user selected a radio button
+                if(selectedAnswerId == -1)
+                {
+                    //Toast not selected
+                    Toast.makeText(QuizActivity.this, R.string.app_name, Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    checkAnswer(selectedAnswerId);
+                }
             }
         });
 
@@ -145,5 +153,8 @@ public class QuizActivity extends AppCompatActivity {
         mChoice2.setText(choices[1]);
         mChoice3.setText(choices[2]);
         mChoice4.setText(choices[3]);
+
+        //reset the radio group
+        mQuestionGroup.clearCheck();
     }
 }
