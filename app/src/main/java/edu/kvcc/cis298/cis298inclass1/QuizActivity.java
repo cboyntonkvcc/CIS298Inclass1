@@ -4,13 +4,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class QuizActivity extends AppCompatActivity {
 
-    private Button mTrueButton;
-    private Button mFalseButton;
+    private RadioGroup mQuestionGroup;
+    private RadioButton mChoice1;
+    private RadioButton mChoice2;
+    private RadioButton mChoice3;
+    private RadioButton mChoice4;
+
+
+    private Button mSubmitButton;
     private Button mNextButton;
     private TextView mQuestionTextView;
 
@@ -21,11 +29,18 @@ public class QuizActivity extends AppCompatActivity {
     //and try to pass the string value, it would work, but it
     //goes against the convesntion of android development
     private Question[] mQuestionBank = new Question[]{
-            new Question (R.string.question_oceans, true),
-            new Question (R.string.question_mideast, false),
-            new Question (R.string.question_africa, true),
-            new Question (R.string.question_americas, true),
-            new Question (R.string.question_asia, true),
+            //First paramater is string that is the question text
+            //second parameter is the id that is the correct answer for the question
+            //this id id the id field assigned to the radio button widget that will
+            //represent the correct answer
+            //if radioButton2 is the correct answer I need to assign the id for
+            //RadioButton2 it willnot have anything to do with the question itself
+            //third parameter is an int array holding the possible answers to the question
+            new Question (R.string.question_1_multiple,R.id.multiple_choice_3,
+                    new int[] {R.string.question_1_choice_1,R.string.question_1_choice_2,R.string.question_1_choice_3,R.string.question_1_choice_4}),
+            new Question (R.string.question_2_multiple,R.id.multiple_choice_2,
+                    new int[] {R.string.question_2_choice_1,R.string.question_2_choice_2,R.string.question_2_choice_3,R.string.question_2_choice_4}),
+
     };
 
     //index of the current question we are on.
@@ -34,16 +49,16 @@ public class QuizActivity extends AppCompatActivity {
 
 
 
-    private void checkAnswer(boolean userPressedTrue) {
+    private void checkAnswer(int selectedRadioButtonId) {
         //Pull the answer from the current question
-        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerIsTrue();
+        int correctAnswer = mQuestionBank[mCurrentIndex].getCorrectAnswerResId();
         //declare a int to hold the string resource id of the answer
         int messageResId = 0;
-        //if the questions answer and userpressingTrue are equal
+        //if the questions res id and correct answer res id are equal
         //they got it right correct answers will be when both
         //variables are the same. If they are different it is wrong
         //set the messageResId once we determine what to set it to
-        if (userPressedTrue == answerIsTrue) {
+        if (selectedRadioButtonId == correctAnswer) {
             messageResId = R.string.correct_toast;
         } else {
             messageResId = R.string.incorrect_toast;
@@ -63,6 +78,15 @@ public class QuizActivity extends AppCompatActivity {
 
         //get a reference to the textview that displays the question
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
+
+        //get out the radio button information from the view
+        mQuestionGroup = (RadioGroup) findViewById(R.id.multiple_group);
+
+        mChoice1 = (RadioButton) findViewById(R.id.multiple_choice_1);
+        mChoice2 = (RadioButton) findViewById(R.id.multiple_choice_2);
+        mChoice3 = (RadioButton) findViewById(R.id.multiple_choice_3);
+        mChoice4 = (RadioButton) findViewById(R.id.multiple_choice_4);
+
         updateQuestion();
 
 
@@ -70,20 +94,22 @@ public class QuizActivity extends AppCompatActivity {
         //reference to the button we want to use in code
         //we will get access to the button in the view by using
         //the id property that we declared on the layout
-        mTrueButton = (Button) findViewById(R.id.true_button);
-        mTrueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkAnswer(true);
-            }
-        });
 
 
-        mFalseButton = (Button) findViewById(R.id.false_button);
-        mFalseButton.setOnClickListener(new View.OnClickListener() {
+
+        mSubmitButton = (Button) findViewById(R.id.submit_button);
+        mSubmitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               checkAnswer(false);
+                //Query the radio button group to find out which radio
+                //button  was selected. store the id of the selected one
+                //in the variable selectedAnswerId
+                //this will get the id of the radiobutton that was selected
+                //it is operating on the Radiobutton widget, and thus returns the
+                //id of the wiget control.
+                int selectedAnswerId = mQuestionGroup.getCheckedRadioButtonId();
+                //call checkAnser sending in the selectedAnswerId
+               checkAnswer(selectedAnswerId);
             }
         });
 
@@ -110,5 +136,14 @@ public class QuizActivity extends AppCompatActivity {
         //set the text on the question text view to the string resource
         //located at the memory address stored in question
         mQuestionTextView.setText(question);
+
+        //fetch the question choice string from the question object
+        int [] choices = mQuestionBank[mCurrentIndex].getChoiceResIds();
+
+        //Assign each question choice text to the text property of the radio button
+        mChoice1.setText(choices[0]);
+        mChoice2.setText(choices[1]);
+        mChoice3.setText(choices[2]);
+        mChoice4.setText(choices[3]);
     }
 }
